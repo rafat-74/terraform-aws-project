@@ -1,45 +1,43 @@
-# 🚀 Terraform AWS Project: Scalable VPC with Public/Private Subnets & NAT Gateway
+# 🚀 Terraform AWS Project: Secure VPC Network with NAT Gateway
 
-## 📝 نظرة عامة (Overview)
+## 📝 Overview
 
-هذا المشروع يستخدم **Terraform** لإنشاء بنية تحتية (**Infrastructure**) كاملة على **Amazon Web Services (AWS)**، تركز على تصميم شبكة آمنة وقابلة للتوسع باستخدام **VPC** (شبكة افتراضية خاصة).
+This project utilizes **Terraform** to provision a complete and secure network infrastructure on **Amazon Web Services (AWS)**. The design implements best practices by separating resources into distinct **Public** and **Private Subnets** within a custom **Virtual Private Cloud (VPC)**.
 
-**الهدف الرئيسي:** إنشاء شبكة مقسمة، حيث يمكن للموارد العامة (مثل **Load Balancers**) استقبال حركة المرور من الإنترنت، بينما الموارد الخاصة (مثل قواعد البيانات وخوادم التطبيقات) تبقى محمية داخل **Subnets** خاصة، مع السماح لها بالوصول للإنترنت الخارجي لتنزيل التحديثات عبر **NAT Gateway**.
-
----
-
-## 🛠️ الموارد المُنْشَأة على AWS (AWS Resources Created)
-
-يتم بناء الموارد التالية في إقليم **`eu-north-1`** (Stockholm):
-
-* **VPC (`aws_vpc`):** الشبكة الرئيسية بـ CIDR **`172.16.0.0/16`**.
-* **Public Subnet (`aws_subnet`):** شبكة فرعية عامة تسمح بالاتصال المباشر بالإنترنت، بـ CIDR **`172.16.2.0/24`**.
-* **Private Subnet (`aws_subnet`):** شبكة فرعية خاصة، بـ CIDR **`172.16.1.0/24`**.
-* **Internet Gateway (`aws_internet_gateway`):** لتوصيل الـ **VPC** بالإنترنت (للحركة العامة).
-* **NAT Gateway (`aws_nat_gateway`):** للسماح للموارد في الشبكة الخاصة بالوصول للإنترنت الخارجي (للـ **Outbound Traffic**) مع استخدام **Elastic IP (`aws_eip`)**.
-* **Route Tables (`aws_route_table`):**
-    * **Public RT:** توجّه حركة المرور إلى **Internet Gateway**.
-    * **Private RT:** توجّه حركة المرور إلى **NAT Gateway**.
-* **EC2 Instance (`aws_instance`):** خادم تجريبي **`t3.micro`** مُنشأ في **Private Subnet** كاختبار لعمل الـ **NAT Gateway**.
+**The Goal:** To create a robust network where public-facing resources (e.g., Load Balancers, not included here) reside in the Public Subnet, and protected resources (e.g., Application Servers, Databases) are isolated in the Private Subnet, with outbound-only internet access granted via a **NAT Gateway**.
 
 ---
 
-## ⚙️ المتطلبات المسبقة (Prerequisites)
+## 🛠️ AWS Resources Provisioned
 
-لتشغيل هذا المشروع على جهازك، يجب أن تتوفر لديك الأدوات التالية:
+The following resources are deployed in the **`eu-north-1`** (Stockholm) region:
 
-1.  **Terraform CLI:** الإصدار المطلوب هو **`>= 1.13.4`**.
-2.  **AWS CLI:** ويجب أن يكون مُعَرَّفًا (**Configured**) بصلاحيات كافية لإنشاء الموارد المذكورة في المشروع.
+* **VPC (`aws_vpc`):** The primary network container with CIDR block **`172.16.0.0/16`**.
+* **Subnets (`aws_subnet`):**
+    * **Public Subnet:** CIDR **`172.16.2.0/24`**, mapped to the Internet Gateway.
+    * **Private Subnet:** CIDR **`172.16.1.0/24`**, routed through the NAT Gateway.
+* **Internet Gateway (`aws_internet_gateway`):** Enables internet access for resources in the Public Subnet.
+* **NAT Gateway (`aws_nat_gateway`):** Placed in the Public Subnet, allowing resources in the Private Subnet to access the internet (e.g., for updates) without being publicly reachable. Uses an **Elastic IP (`aws_eip`)**.
+* **Route Tables (`aws_route_table`):** Dedicated Route Tables for both Public and Private traffic flows.
+* **EC2 Instance (`aws_instance`):** A **`t3.micro`** instance (running **Amazon Linux 2023**) deployed in the **Private Subnet** to validate the NAT Gateway's outbound connectivity.
 
 ---
 
-## 🚀 خطوات التشغيل (Deployment Steps)
+## ⚙️ Prerequisites
 
-اتبع الخطوات التالية لنشر البنية التحتية باستخدام **Terraform**:
+To deploy this infrastructure, you must have the following tools and configurations:
 
-### 1. التهيئة (Initialization)
+1.  **Terraform CLI:** Required version is **`>= 1.13.4`**.
+2.  **AWS CLI Configured:** Your AWS credentials must be configured locally (e.g., via `~/.aws/credentials` or **Environment Variables** (متغيرات البيئة)) with sufficient permissions to create the listed resources.
 
-انتقل إلى مجلد المشروع وقم بتهيئة الـ **Providers** وتنزيلهم:
+---
+
+## 🚀 Deployment Steps
+
+Navigate to the project directory in your **CLI** (واجهة سطر الأوامر) and run the following commands:
+
+### 1. Initialization
+Initialize the project and download the necessary **AWS Provider** (مزود):
 
 ```bash
 terraform init
